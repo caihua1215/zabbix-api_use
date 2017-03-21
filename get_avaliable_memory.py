@@ -5,7 +5,7 @@ from sys import argv
 #Group_name_Q="web_beike"
 Group_name_Q = argv[1]
 zapi = ZabbixAPI("http://172.16.21.124/")
-zapi.login("qihang","Qh0321.")
+zapi.login("useer","passwd")
 #根据输入groupname 获取groupid
 def get_group_id(group_name):
     group=zapi.hostgroup.get(filter={'name' : group_name})
