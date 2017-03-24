@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 #coding:utf-8
-#from sys import argv
-#Group_name_Q="web_beike"
 import time
 import commands
 from pyzabbix import ZabbixAPI
-zapi = ZabbixAPI("http://172.16.21.124/")
-zapi.login("username","passwd")
+zapi = ZabbixAPI("url")
+zapi.login("user","passwd")
 #获取hostid
 def group_id(groupname):
   Group_id = zapi.hostgroup.get(filter={'name' : groupname})[0]['groupid']
@@ -79,6 +77,7 @@ def tread_value_max(ITEMID,TIME_FROM,TIME_STILL):
     else:
         print "Value_max_all do not have value"
     return 0,0
+#通过计算返回一个trend平均值avg
 def tread_value_avg(ITEMID,TIME_FROM,TIME_STILL):
     Value_avg_all=zapi.trend.get(itemids=ITEMID,time_from=TIME_FROM,time_still=TIME_STILL)
     if Value_avg_all:
@@ -90,17 +89,12 @@ def tread_value_avg(ITEMID,TIME_FROM,TIME_STILL):
     else:
         print "####no value"
         return 0
-
 #解决时间问题：一周，每天时间转换时间戳。
 def  date_week_to_timestamp():
     Week_from = time.mktime(time.strptime(commands.getoutput('date -d \'7 days ago\' +%Y%m%d'),"%Y%m%d"))
     Week_still = time.mktime(time.strptime(commands.getoutput('date +%Y%m%d'),'%Y%m%d'))
     return Week_from,Week_still
-
 if __name__ == '__main__':
-    #Gid=group_id('api-bus_appstore')
-    #print Gid
-    #tread_value_min(90264,1490115600,1490155200)
     #获取所有分组
     group_name_list = []
     delete_group_name_list = [u'H3C-SWITCH',u'Network',u'Templates',u'Zabbix servers', u'Discovered hosts', u'Virtual machines', u'Hypervisors',u'\u4e16\u7eaa\u4e92\u8054\u673a\u623f', u'\u5168\u90e8\u4e3b\u673a',u'test_envrionment',u'Mikoomi Templates',u'\u7eff\u5730\u673a\u623f', u'Linux servers']
@@ -112,10 +106,6 @@ if __name__ == '__main__':
             group_name_list.remove(de_name)
         else:
             print "dename not in list",type(de_name),de_name
-        #group_name_list.remove(de_name)
-    #print group_name_list
-    #print len(group_name_list)
-
     for group_name in group_name_list:
         dict=group_host(group_id(group_name))
         #print group_name,dict
@@ -127,16 +117,9 @@ if __name__ == '__main__':
             for i in dict.keys():
                 print i,dict[i]
                 Iid=item_id(i,'system.cpu.util[,idle]')
-                #zapi.trend.get(itemids=71045,time_from=1490115600,time_still=1490155200)
-                #print zapi.trend.get(itemids=Iid,time_from=1490115600,time_still=1490155200)
-                #2017.3.13==1489334400
-                #2017.3.19==1489852800
-                #qh_min_value,qh_min_clock=tread_value_min(Iid,Time_from,Time_still)
-                #qh_max_value,qh_max_clock=tread_value_max(Iid,Time_from,Time_still)
+                qh_min_value,qh_min_clock=tread_value_min(Iid,Time_from,Time_still)
+                qh_max_value,qh_max_clock=tread_value_max(Iid,Time_from,Time_still)
                 qh_avg=tread_value_avg(Iid,Time_from,Time_still)
                 print "cpu-idle_avg_value: %.4f" % qh_avg
-                #print "cpu-idle_min_value:[%s, %s]" %(qh_min_value,qh_min_clock)
-                #print "cpu-idle_max_value:[%s, %s]" %(qh_max_value,qh_max_clock)
-            #print "trend-max-dict",qh_max
-            #print "trend-min-list",qh_min
-            #print "trend-max-list",qh_max
+                print "cpu-idle_min_value:[%s, %s]" %(qh_min_value,qh_min_clock)
+                print "cpu-idle_max_value:[%s, %s]" %(qh_max_value,qh_max_clock)
